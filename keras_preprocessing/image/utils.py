@@ -8,6 +8,7 @@ import os
 import warnings
 
 import numpy as np
+import skimage
 
 try:
     from PIL import ImageEnhance
@@ -100,25 +101,11 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
         ImportError: if PIL is not available.
         ValueError: if interpolation method is not supported.
     """
-    if grayscale is True:
-        warnings.warn('grayscale is deprecated. Please use '
-                      'color_mode = "grayscale"')
-        color_mode = 'grayscale'
-    if pil_image is None:
-        raise ImportError('Could not import PIL.Image. '
-                          'The use of `load_img` requires PIL.')
-    img = pil_image.open(path)
-    if color_mode == 'grayscale':
-        if img.mode != 'L':
-            img = img.convert('L')
-    elif color_mode == 'rgba':
-        if img.mode != 'RGBA':
-            img = img.convert('RGBA')
-    elif color_mode == 'rgb':
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
+    x = skimage.io.imread(path)
+    if x.dtype == np.uint16:
+        img = array_to_img(x, bits=16)
     else:
-        raise ValueError('color_mode must be "grayscale", "rgb", or "rgba"')
+        img = array_to_img(x)
     if target_size is not None:
         width_height_tuple = (target_size[1], target_size[0])
         if img.size != width_height_tuple:
@@ -223,7 +210,7 @@ def _list_valid_filenames_in_directory(directory, white_list_formats, split,
     return classes, filenames
 
 
-def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
+def array_to_img(x, data_format='channels_last', scale=True, dtype='float32', bits=8):
     """Converts a 3D Numpy array to a PIL Image instance.
 
     # Arguments
@@ -262,7 +249,10 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
         x_max = np.max(x)
         if x_max != 0:
             x /= x_max
-        x *= 255
+        if bits == 16:
+            x *= 65535
+        else:
+            x *= 255  
     if x.shape[2] == 4:
         # RGBA
         return pil_image.fromarray(x.astype('uint8'), 'RGBA')
@@ -271,7 +261,11 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
         return pil_image.fromarray(x.astype('uint8'), 'RGB')
     elif x.shape[2] == 1:
         # grayscale
-        return pil_image.fromarray(x[:, :, 0].astype('uint8'), 'L')
+        if bits==16:
+            return pil_image.fromarray(x[:, :, 0].astype('uint16'), 'I;16B')
+        else:
+            return pil_image.fromarray(x[:, :, 0].astype('uint8'), 'L')
+
     else:
         raise ValueError('Unsupported channel number: %s' % (x.shape[2],))
 
