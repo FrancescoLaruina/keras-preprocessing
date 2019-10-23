@@ -16,6 +16,19 @@ def test_validate_filename(tmpdir):
     assert not utils.validate_filename(str(filename), valid_extensions)
     assert not utils.validate_filename('some_test_file.png', valid_extensions)
 
+def test_load_img_grayscale32(tmpdir):
+    filename_gray16 = str(tmpdir / 'gray16_utils.png')
+
+    original_gray16_array = np.array((2**16-1) * np.random.rand(100, 100, 1),
+                                  dtype=np.int32)
+    original_gray16 = utils.array_to_img(original_gray16_array, scale=False)
+    assert np.all(original_gray16_array.squeeze() == np.asarray(original_gray16)) 
+    original_gray16.save(filename_gray16)
+    loaded_img = utils.load_img(filename_gray16, color_mode='grayscale32')
+    loaded_img_array = utils.img_to_array(loaded_img)
+    
+    assert loaded_img_array.shape == original_gray16_array.shape
+    assert np.all(loaded_img_array == original_gray16_array)
 
 def test_load_img(tmpdir):
     filename_rgb = str(tmpdir / 'rgb_utils.png')

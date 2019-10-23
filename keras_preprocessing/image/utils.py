@@ -111,6 +111,9 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
     if color_mode == 'grayscale':
         if img.mode != 'L':
             img = img.convert('L')
+    elif color_mode == 'grayscale32':
+        if img.mode != 'I':
+            img = img.convert('I')
     elif color_mode == 'rgba':
         if img.mode != 'RGBA':
             img = img.convert('RGBA')
@@ -118,7 +121,7 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
         if img.mode != 'RGB':
             img = img.convert('RGB')
     else:
-        raise ValueError('color_mode must be "grayscale", "rgb", or "rgba"')
+        raise ValueError('color_mode must be "grayscale", "rgb", "grayscale32" or "rgba"')
     if target_size is not None:
         width_height_tuple = (target_size[1], target_size[0])
         if img.size != width_height_tuple:
@@ -262,6 +265,8 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
         x_max = np.max(x)
         if x_max != 0:
             x /= x_max
+        if x_max > 255:
+            x *= 65535
         x *= 255
     if x.shape[2] == 4:
         # RGBA
@@ -271,7 +276,12 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
         return pil_image.fromarray(x.astype('uint8'), 'RGB')
     elif x.shape[2] == 1:
         # grayscale
-        return pil_image.fromarray(x[:, :, 0].astype('uint8'), 'L')
+        if x.max() > 255:
+            image = pil_image.fromarray(x[:, :, 0].astype('int32'), 'I')
+            return image
+        else:
+            return pil_image.fromarray(x[:, :, 0].astype('uint8'), 'L')
+
     else:
         raise ValueError('Unsupported channel number: %s' % (x.shape[2],))
 
