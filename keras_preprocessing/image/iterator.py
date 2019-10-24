@@ -31,7 +31,7 @@ class Iterator(IteratorType):
         shuffle: Boolean, whether to shuffle the data between epochs.
         seed: Random seeding for data shuffling.
     """
-    white_list_formats = ('png', 'jpg', 'jpeg', 'bmp', 'ppm', 'tif', 'tiff')
+    white_list_formats = ('png', 'jpg', 'jpeg', 'bmp', 'ppm', 'tif', 'tiff', 'dcm')
 
     def __init__(self, n, batch_size, shuffle, seed):
         self.n = n
@@ -142,7 +142,8 @@ class BatchFromFilesMixin():
                              save_prefix,
                              save_format,
                              subset,
-                             interpolation):
+                             interpolation,
+                             read_func=None):
         """Sets attributes to use later for processing files into a batch.
 
         # Arguments
@@ -169,9 +170,10 @@ class BatchFromFilesMixin():
                 supported. If PIL version 3.4.0 or newer is installed, "box" and
                 "hamming" are also supported. By default, "nearest" is used.
         """
+        self.read_func = read_func
         self.image_data_generator = image_data_generator
         self.target_size = tuple(target_size)
-        if color_mode not in {'rgb', 'rgba', 'grayscale'}:
+        if color_mode not in {'rgb', 'rgba', 'grayscale', 'grayscale32'}:
             raise ValueError('Invalid color mode:', color_mode,
                              '; expected "rgb", "rgba", or "grayscale".')
         self.color_mode = color_mode
@@ -227,7 +229,8 @@ class BatchFromFilesMixin():
             img = load_img(filepaths[j],
                            color_mode=self.color_mode,
                            target_size=self.target_size,
-                           interpolation=self.interpolation)
+                           interpolation=self.interpolation,
+                           read_func=self.read_func)
             x = img_to_array(img, data_format=self.data_format)
             # Pillow images should be closed after `load_img`,
             # but not PIL images.

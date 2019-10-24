@@ -274,8 +274,10 @@ class ImageDataGenerator(object):
                  data_format='channels_last',
                  validation_split=0.0,
                  interpolation_order=1,
-                 dtype='float32'):
+                 dtype='float32',
+                 read_func=None):
 
+        self.read_func = read_func
         self.featurewise_center = featurewise_center
         self.samplewise_center = samplewise_center
         self.featurewise_std_normalization = featurewise_std_normalization
@@ -537,7 +539,8 @@ class ImageDataGenerator(object):
             save_format=save_format,
             follow_links=follow_links,
             subset=subset,
-            interpolation=interpolation
+            interpolation=interpolation,
+            read_func=self.read_func
         )
 
     def flow_from_dataframe(self,

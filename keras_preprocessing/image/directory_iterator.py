@@ -81,7 +81,8 @@ class DirectoryIterator(BatchFromFilesMixin, Iterator):
                  follow_links=False,
                  subset=None,
                  interpolation='nearest',
-                 dtype='float32'):
+                 dtype='float32',
+                 read_func=None):
         super(DirectoryIterator, self).set_processing_attrs(image_data_generator,
                                                             target_size,
                                                             color_mode,
@@ -90,7 +91,8 @@ class DirectoryIterator(BatchFromFilesMixin, Iterator):
                                                             save_prefix,
                                                             save_format,
                                                             subset,
-                                                            interpolation)
+                                                            interpolation,
+                                                            read_func)
         self.directory = directory
         self.classes = classes
         if class_mode not in self.allowed_class_modes:

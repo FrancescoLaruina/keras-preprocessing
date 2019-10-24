@@ -19,8 +19,7 @@ def test_validate_filename(tmpdir):
 def test_load_img_grayscale32(tmpdir):
     filename_gray16 = str(tmpdir / 'gray16_utils.png')
 
-    original_gray16_array = np.array((2**16-1) * np.random.rand(100, 100, 1),
-                                  dtype=np.int32)
+    original_gray16_array = np.array(500 * np.random.rand(100, 100, 1), dtype=np.int32)
     original_gray16 = utils.array_to_img(original_gray16_array, scale=False)
     assert np.all(original_gray16_array.squeeze() == np.asarray(original_gray16)) 
     original_gray16.save(filename_gray16)

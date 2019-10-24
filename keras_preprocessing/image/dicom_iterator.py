@@ -1,15 +1,16 @@
+import multiprocessing
 import os
 import warnings
-import multiprocessing
 
 import numpy as np
 import pydicom
 
-from .iterator import Iterator
 from .directory_iterator import DirectoryIterator
-from .utils import _PIL_INTERPOLATION_METHODS, array_to_img, img_to_array, _list_valid_filenames_in_directory
-from .iterator import BatchFromFilesMixin
 from .image_data_generator import ImageDataGenerator
+from .iterator import BatchFromFilesMixin, Iterator
+from .utils import (_PIL_INTERPOLATION_METHODS,
+                    _list_valid_filenames_in_directory, array_to_img,
+                    img_to_array)
 
 
 def load_img(path, grayscale=False, color_mode='rgb', target_size=None,

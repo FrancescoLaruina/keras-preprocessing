@@ -75,8 +75,11 @@ def save_img(path,
     img.save(path, format=file_format, **kwargs)
 
 
+def pil_reader(path):
+    return pil_image.open(path)
+
 def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
-             interpolation='nearest'):
+             interpolation='nearest', read_func=None):
     """Loads an image into PIL format.
 
     # Arguments
@@ -107,7 +110,11 @@ def load_img(path, grayscale=False, color_mode='rgb', target_size=None,
     if pil_image is None:
         raise ImportError('Could not import PIL.Image. '
                           'The use of `load_img` requires PIL.')
-    img = pil_image.open(path)
+    try:
+        img = read_func(path)
+        img = array_to_img(img)
+    except:
+        img = pil_image.open(path)
     if color_mode == 'grayscale':
         if img.mode != 'L':
             img = img.convert('L')
@@ -267,7 +274,8 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
             x /= x_max
         if x_max > 255:
             x *= 65535
-        x *= 255
+        else:
+            x *= 255
     if x.shape[2] == 4:
         # RGBA
         return pil_image.fromarray(x.astype('uint8'), 'RGBA')
@@ -277,7 +285,7 @@ def array_to_img(x, data_format='channels_last', scale=True, dtype='float32'):
     elif x.shape[2] == 1:
         # grayscale
         if x.max() > 255:
-            image = pil_image.fromarray(x[:, :, 0].astype('int32'), 'I')
+            image = pil_image.fromarray(x[:, :, 0].astype(np.int32), 'I')
             return image
         else:
             return pil_image.fromarray(x[:, :, 0].astype('uint8'), 'L')
