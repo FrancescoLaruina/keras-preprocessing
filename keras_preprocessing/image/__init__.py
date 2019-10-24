@@ -9,3 +9,4 @@ from .image_data_generator import ImageDataGenerator
 from .iterator import Iterator
 from .numpy_array_iterator import NumpyArrayIterator
 from .utils import *
+from .dicom_iterator import DirectoryIteratorDicom_improved
